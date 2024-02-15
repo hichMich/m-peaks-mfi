@@ -1,67 +1,36 @@
-version: "3.7"
+version: "3.9"
 
 services:
-  #### DECLARE ---- SERVICES ---- BEGIN ####
-
-  #### DECLARE ---- SERVICES - [PART] - DB ---- BEGIN ####
-
   postgres:
-    image: ${POSTGRES_IMAGE}
+    image: ${POSTGIS_CONTAINER_IMAGE:-postgis/postgis}:${TEST_TAG:-latest}
     volumes:
       - 'postgres-data:/var/lib/postgresql/data'
-    networks:
-      - "default"
+    ports:
+    - '5432:5432'
     environment:
-      - 'POSTGRES_DB=${POSTGRES_DB}'
-      - 'POSTGRES_USER=${POSTGRES_USER}'
-      - 'POSTGRES_PASSWORD=${POSTGRES_PASSWORD}'
-
-  backup-postgres:
-    image: ${POSTGRES_BACKUP_IMAGE}
-    networks:
-      - "default"
-    environment:
-      - 'POSTGRES_HOST=postgres'
-      - 'POSTGRES_DB=${POSTGRES_DB}'
-      - 'POSTGRES_USER=${POSTGRES_USER}'
-      - 'POSTGRES_PASSWORD=${POSTGRES_PASSWORD}'
-      - 'POSTGRES_EXTRA_OPTS=-Z9 --schema=public --blobs'
-      - 'SCHEDULE=${POSTGRES_BACKUP_SCHEDULE}'
-      - 'BACKUP_KEEP_DAYS=7'
-      - 'BACKUP_KEEP_WEEKS=4'
-      - 'BACKUP_KEEP_MONTHS=6'
-    volumes:
-      - "backups-folder:/backups"
-  
-  #### DECLARE SERVICES - [PART] - DB ---- END ####
-
-  #### DECLARE SERVICES - [PART] - API ---- BEGIN ####
+      - 'POSTGRES_DB=${POSTGRES_DB:-peaks}'
+      - 'POSTGRES_USER=${POSTGRES_USER:-mfi}'
+      - 'POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-peaks#local}'
   api:
-    image: '${CORE_CONTAINER_IMAGE}:${CI_COMMIT_REF_NAME}.${VERSION}'
-    networks:
-      - "default"
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+      args:
+        PYTHON_IMAGE: ${PYTHON_IMAGE:-python:3.10-slim}
+    image: ${API_CONTAINER_IMAGE:-m-peaks-mfi/api}:${TEST_TAG:-latest}
+    ports:
+      - '5000:8080'
     environment:
-      - LOG_LEVEL=${API_LOG_LEVEL}
+      - VERSION=${VERSION:-1.0.0}
       - HTTP_HOST=0.0.0.0
       - HTTP_PORT=5001
-      - VERSION=${CORE_VERSION}
+      - INSECURE_CORS=1
+      - LOG_LEVEL=${API_LOG_LEVEL}
       - DB_HOST=postgres
-      - DB_SCHEMA=${POSTGRES_DB}
-      - DB_USER=${POSTGRES_USER}
-      - DB_PASS=${POSTGRES_PASSWORD}
-      - API_HOST=${CORE_TRAEFIK_HOST}${CORE_TRAEFIK_PREFIX}
-
-  #### DECLARE SERVICES ---- END ####
+      - DB_NAME=peaks
+      - DB_USER=mfi
+      - DB_PASSWORD=${POSTGRES_PASSWORD:-peaks#local}
 
 volumes:
-  #### DECLARE VOLUMES ---- BEGIN ####
   postgres-data:
-    driver: "local-persist"
-    driver_opts:
-      mountpoint: "/data/ceph/techlab/apps/${APP}/${ENV}/postgres/data"
-
-  backups-folder:
-    driver: "local-persist"
-    driver_opts:
-      mountpoint: "/data/ceph/techlab/apps/${APP}/${ENV}/backups"
-  #### DECLARE VOLUMES ---- END ####
+    driver: "local"

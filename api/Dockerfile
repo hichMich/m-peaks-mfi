@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # Build stage
 # ----------------------------------------------------------------------------------------------------------------------
-ARG PYTHON_IMAGE
+ARG PYTHON_IMAGE=python:3.10-slim
 FROM ${PYTHON_IMAGE} AS build-img
 
 RUN apt-get update && \
@@ -21,7 +21,7 @@ RUN . /container/venv/bin/activate && python setup.py install
 # ----------------------------------------------------------------------------------------------------------------------
 # Target stage
 # ----------------------------------------------------------------------------------------------------------------------
-FROM ${PYTHON_IMAGE} as target-img
+FROM ${PYTHON_IMAGE}
 
 RUN apt-get update && apt-get install -y wait-for-it curl && rm -rf /var/lib/apt/lists/*
 
