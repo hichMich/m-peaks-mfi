@@ -1,0 +1,15 @@
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+
+
+lint:
+
+test:
+
+build:
+
+deploy:
+

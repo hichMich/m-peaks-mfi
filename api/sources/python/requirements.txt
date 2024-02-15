@@ -1,0 +1,6 @@
+fastapi
+alembic
+sqlalchemy
+pydantic
+geoalchemy2
+pytest
