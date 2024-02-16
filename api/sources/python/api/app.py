@@ -2,27 +2,21 @@
 # -*- coding: utf-8 -*-
 import logging
 from fastapi import FastAPI
-from core import endpoints
+from api import endpoints
 
 import uvicorn
 from starlette.middleware.cors import CORSMiddleware
 
-from core import context as ctx
-from core.models import Base
+from api import context as ctx
+from api.models import Base
 
-from core.dao.postgres_dao import get_engine
-
-logger = logging.getLogger('main')
-
-logging.getLogger('multipart.multipart').setLevel(logging.ERROR)
-
-Base.metadata.create_all(bind=get_engine())
+from api.dao.postgres_dao import get_engine
 
 logger = logging.getLogger('main')
 logging.getLogger('multipart.multipart').setLevel(logging.ERROR)
 Base.metadata.create_all(bind=get_engine())
 
-app = FastAPI(title='m-peaks-mfi api', description='Montain peaks API for MFI', version=ctx.VERSION, root_path=ctx.DEPLOYED_PREFIX)
+app = FastAPI(title='m-peaks-mfi api', description='Montain peaks API for MFI', version=ctx.VERSION, root_path="")
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,17 +25,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-async def startup_event():
-    logger.info('Startup API')
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    logger.info('Shutdown API')
-
 
 app.include_router(endpoints.router)
 
