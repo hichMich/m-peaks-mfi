@@ -56,3 +56,13 @@ def create_mountain_peak(data: MountainPeaks, db: Session) -> UUID:
             msg=f"Can't create the mountain peak, root cause: {ex}",
             code_status=http_status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+def select_all_mountains_peaks(db: Session) -> List[MountainPeak]:
+    try:
+        mountain_peaks = db.execute(select(MountainPeak)).scalars().all()
+        return mountain_peaks
+    except Exception as ex:
+        raise ServiceTechnicalException(
+            msg=f"Can't get all mountain peaks, root cause: {ex}",
+            code_status=http_status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
