@@ -16,7 +16,7 @@ logger = logging.getLogger('main')
 logging.getLogger('multipart.multipart').setLevel(logging.ERROR)
 Base.metadata.create_all(bind=get_engine())
 
-app = FastAPI(title='m-peaks-mfi api', description='Montain peaks API for MFI', version=ctx.VERSION, root_path="")
+app = FastAPI(title='m-peaks-mfi api', description='Mountain peaks API for MFI', version=ctx.VERSION, root_path="")
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,6 +27,7 @@ app.add_middleware(
 )
 
 app.include_router(endpoints.router)
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=5001)

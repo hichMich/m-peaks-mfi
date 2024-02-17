@@ -1,17 +1,18 @@
 import uuid
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Text, Column, Float, UniqueConstraint
+from sqlalchemy import Text, Column, Float, UniqueConstraint, Index
 from sqlalchemy.dialects.postgresql import UUID
 
 
 Base = declarative_base()
 
 
-class MontainPeak(Base):
-    __tablename__ = 'montain_peak'
+class MountainPeak(Base):
+    __tablename__ = 'mountain_peak'
     __table_args__ = (
-            UniqueConstraint('latitude', 'longitude', 'altitude', name='montain_uq',),
+            Index('idx_mountain_peak_name', 'name'),
+            UniqueConstraint('latitude', 'longitude', 'altitude', name='mountain_uq',),
             UniqueConstraint('name', name='name_uq'),
         )
 
