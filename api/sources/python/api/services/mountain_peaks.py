@@ -1,15 +1,19 @@
 from api.dao.mountain_peaks import (
     create_mountain_peak,
     select_all_mountains_peaks,
-    retrieve_mountain_peak_by_uuid,
-    retrieve_mountain_peak_by_name,
     retrieve_mountain_peak_by_location,
     init_mountains_peaks,
+    update_m_peak,
     delete_mountain_peak_by_uuid,
     delete_mountain_peak_by_name,
     delete_mountain_peak_by_location,
 )
-from api.schemas.mountain_peaks import MountainPeaks, MountainPeaksEntire, Location
+from api.schemas.mountain_peaks import (
+    MountainPeaks,
+    MountainPeaksEntire,
+    Location,
+    MountainPeakOnCreateResponse,
+)
 from api.services import utils
 from api.schemas.common import MOUNTAINS_PEAKS_SAMPLE
 from api import context as ctx
@@ -18,6 +22,7 @@ from fastapi import status as http_status
 import logging
 from typing import List
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import NoResultFound
 from uuid import UUID
 
 
@@ -134,7 +139,42 @@ def get_mountain_peak_by_location(location: Location,  db: Session) -> MountainP
     """
     try:
         if isinstance(location, Location):
-            return retrieve_mountain_peak_by_location(location, db)
+            mountain_peak = retrieve_mountain_peak_by_location(location, db)
+            if mountain_peak is None:
+                raise NoResultFound(
+                    f"This mountain peak location does not exist !",
+                    http_status.HTTP_204_NO_CONTENT
+                 )
+            return mountain_peak
+    except ServiceTechnicalException as ex:
+        raise ex
+    
+
+def update_mountain_peak(uuid: UUID, data: MountainPeaks, db: Session):
+    """
+        Update a mountain peak
+
+        ##### Parameter:
+        - uuid: UUID
+        - data: MountainPeaks
+        - db: Session
+    """
+    try:
+        if not isinstance(uuid, UUID):
+            raise ServiceFunctionalException(
+                msg=f"Can't update mountain peak, wrong {uuid}",
+                code_status=http_status.HTTP_400_BAD_REQUEST
+            )
+        validated_data = utils.all_attrs_are_valid(data)
+        if not validated_data:
+            raise ServiceFunctionalException(
+                msg=f"Error ! Please check the requestBody object {data}",
+                code_status=http_status.HTTP_400_BAD_REQUEST
+            ) 
+        data_dict = data.model_dump(exclude_none=True)
+        if 'uuid' in data_dict:
+            del data_dict['uuid']
+        update_m_peak(uuid, data_dict, db)
     except ServiceTechnicalException as ex:
         raise ex
     

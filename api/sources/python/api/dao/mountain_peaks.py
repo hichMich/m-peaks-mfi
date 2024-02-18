@@ -46,14 +46,17 @@ def retrieve_mountain_peak_by_location(location: Location, db: Session) -> Mount
             MountainPeak.longitude == location.longitude,
             MountainPeak.latitude == location.latitude,
             MountainPeak.altitude == location.altitude
-        )).scalar_one()
+        )).one_or_none()
+        if mountain_peak is None:
+            return
+        m_peak = mountain_peak._asdict()
         mountain_peak_obj = MountainPeaksEntire(
-            uuid=mountain_peak.uuid,
-            name=mountain_peak.name,
+            uuid=m_peak['MountainPeak'].uuid,
+            name=m_peak['MountainPeak'].name,
             location=Location(
-                longitude=mountain_peak.longitude,
-                latitude=mountain_peak.latitude,
-                altitude=mountain_peak.altitude
+                longitude=m_peak['MountainPeak'].longitude,
+                latitude=m_peak['MountainPeak'].latitude,
+                altitude=m_peak['MountainPeak'].altitude
             )
         )
         return mountain_peak_obj
@@ -62,6 +65,7 @@ def retrieve_mountain_peak_by_location(location: Location, db: Session) -> Mount
             msg=f"Can't retrieve the mountain peak by location {location}, root cause: {ex}",
             code_status=http_status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
 
 
 def retrieve_mountain_peaks_by_all(db: Session) -> List[MountainPeaks]:
@@ -132,6 +136,26 @@ def init_mountains_peaks(data: List[Dict], db: Session):
     except Exception as ex:
         raise ServiceTechnicalException(
             msg=f"Can't create all mountain peaks, root cause: {ex}",
+            code_status=http_status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+def update_m_peak(uuid: UUID, data: Dict, db: Session):
+    try:
+        data['latitude'] = data['location']['latitude']
+        data['longitude'] = data['location']['longitude']
+        data['altitude'] = data['location']['altitude']
+        data.update({
+            'location': from_shape(
+                Point(data['longitude'], data['latitude'], data['altitude']),
+                srid=4326
+            ),
+        })
+        db.execute(update(MountainPeak).where(MountainPeak.uuid == uuid).values(**data))
+        db.commit()
+    except Exception as ex:
+        raise ServiceTechnicalException(
+            msg=f"Can't delete the mountain peak by uuid {uuid}, root cause: {ex}",
             code_status=http_status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 

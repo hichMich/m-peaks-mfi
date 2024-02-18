@@ -15,13 +15,14 @@ from api.services.mountain_peaks import (
     get_mountain_peaks_by_all,
     initialize_mountains_peaks,
     remove_mountain_peak_by_criteria,
-    get_mountain_peak_by_location
+    get_mountain_peak_by_location,
+    update_mountain_peak
 )
 from api.dao.postgres_dao import get_engine, get_db
 from api.exceptions import ServiceFunctionalException, ServiceTechnicalException
-from api import context as ctx
 from typing import List
 from uuid import UUID
+from sqlalchemy.exc import NoResultFound
 
 
 router = APIRouter()
@@ -167,6 +168,38 @@ def get_a_mountain_peak_by_location(
     try:
         location = Location(longitude=longitude, latitude=latitude, altitude=altitude)
         return get_mountain_peak_by_location(location, db)
+    except ServiceFunctionalException as ex:
+        raise HTTPException(status_code=http_status.HTTP_400_BAD_REQUEST, detail=str(ex.msg))
+    except ServiceTechnicalException as ex:
+        logger.error(ex.msg)
+        raise HTTPException(status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(ex.msg))
+    except NoResultFound as ex:
+        raise HTTPException(status_code=http_status.HTTP_204_NO_CONTENT, detail=str(ex.args[0]))
+    except Exception as ex:
+        logger.error(f"Unknown exception: {ex}")
+        raise ex
+
+
+@router.put(
+        '/mountain_peak/{uuid}',
+        status_code=http_status.HTTP_200_OK,
+        tags=['mountain_peaks']
+)
+def update_a_mountain_peak(
+    uuid: UUID,
+    data: MountainPeaks,
+    db=Depends(get_db)
+):
+    """
+        Update a moutain peak
+
+        #### Parameters: 
+        - uuid: UUID
+        - data: MountainPeaks
+        - db: Session
+    """
+    try:
+        update_mountain_peak(uuid, data, db)
     except ServiceFunctionalException as ex:
         raise HTTPException(status_code=http_status.HTTP_400_BAD_REQUEST, detail=str(ex.msg))
     except ServiceTechnicalException as ex:
