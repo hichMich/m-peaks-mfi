@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Text, Column, Float, UniqueConstraint, Index
 from sqlalchemy.dialects.postgresql import UUID
-
+from geoalchemy2.types import Geometry 
 
 Base = declarative_base()
 
@@ -21,3 +21,5 @@ class MountainPeak(Base):
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
     altitude = Column(Float, nullable=False)
+    location = Column(Geometry('POINTZ'), nullable=False)
+    
