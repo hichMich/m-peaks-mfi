@@ -10,6 +10,13 @@ class Location(ApiBaseModel):
     altitude: Optional[float] = Field(title='The altitude of the mountain peak')
 
 
+class BoundingBox(ApiBaseModel):
+    xmin: Optional[float] = Field(title='Minimum latitude')
+    ymin: Optional[float] = Field(title='Minimum longitude')
+    xmax: Optional[float] = Field(title='Maximum latitude')
+    ymax: Optional[float] = Field(title='Maximum longitude')
+
+
 class MountainPeaks(ApiBaseModel):
     """
         This class define a MountainPeak object

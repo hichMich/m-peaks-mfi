@@ -8,7 +8,8 @@ from api.schemas.mountain_peaks import (
     MountainPeaks,
     MountainPeakOnCreateResponse,
     MountainPeaksEntire,
-    Location
+    Location,
+    BoundingBox,
 )
 from api.services.mountain_peaks import (
     add_mountain_peak,
@@ -16,7 +17,8 @@ from api.services.mountain_peaks import (
     initialize_mountains_peaks,
     remove_mountain_peak_by_criteria,
     get_mountain_peak_by_location,
-    update_mountain_peak
+    update_mountain_peak,
+    retrieve_all_mountains_peaks_in_bbox
 )
 from api.dao.postgres_dao import get_engine, get_db
 from api.exceptions import ServiceFunctionalException, ServiceTechnicalException
@@ -205,6 +207,45 @@ def update_a_mountain_peak(
     except ServiceTechnicalException as ex:
         logger.error(ex.msg)
         raise HTTPException(status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(ex.msg))
+    except Exception as ex:
+        logger.error(f"Unknown exception: {ex}")
+        raise ex
+
+
+@router.get(
+        '/mountain_peak/bbox/{xmin}/{ymin}/{xmax}/{ymax}',
+        response_model=List[MountainPeaksEntire],
+        status_code=http_status.HTTP_200_OK,
+        tags=['mountain_peaks']
+)
+def get_all_mountains_peaks_in_bbox(
+    xmin: float,
+    ymin: float,
+    xmax: float,
+    ymax: float,
+    db=Depends(get_db)
+) -> List[MountainPeaksEntire]:
+    """
+        Get all moutains peaks in bbox
+
+        bbox = bounding box: https://wiki.openstreetmap.org/wiki/Bounding_Box
+        #### Parameters: 
+        - location: Location
+        - db: SqlAlchemy session
+
+        #### Returns:
+        - List of MountainPeaksEntire
+    """
+    try:
+        bbox = BoundingBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
+        return retrieve_all_mountains_peaks_in_bbox(bbox, db)
+    except ServiceFunctionalException as ex:
+        raise HTTPException(status_code=http_status.HTTP_400_BAD_REQUEST, detail=str(ex.msg))
+    except ServiceTechnicalException as ex:
+        logger.error(ex.msg)
+        raise HTTPException(status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(ex.msg))
+    except NoResultFound as ex:
+        raise HTTPException(status_code=http_status.HTTP_204_NO_CONTENT, detail=str(ex.args[0]))
     except Exception as ex:
         logger.error(f"Unknown exception: {ex}")
         raise ex

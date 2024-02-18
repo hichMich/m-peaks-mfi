@@ -3,11 +3,13 @@ from api.schemas.mountain_peaks import (
     MountainPeaks,
     MountainPeaksEntire,
     Location,
+    BoundingBox
 )
 from api.exceptions import ServiceTechnicalException
 from api.models import MountainPeak
+from geoalchemy2 import functions as func
 from geoalchemy2.shape import from_shape
-from shapely.geometry import Point
+from shapely.geometry import Point, Polygon
 from fastapi import status as http_status
 from typing import List, Dict
 from sqlalchemy.orm import Session
@@ -193,5 +195,27 @@ def delete_mountain_peak_by_location(location: Location, db: Session):
     except Exception as ex:
         raise ServiceTechnicalException(
             msg=f"Can't delete the mountain peak by location {location}, root cause: {ex}",
+            code_status=http_status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+def retrieve_all_m_peaks_in_bbox(bbox: BoundingBox, db: Session):
+    try:
+        # build the bbox
+        bbox_polygon = from_shape(Polygon([
+            (bbox.xmin, bbox.ymin),
+            (bbox.xmin, bbox.ymax),
+            (bbox.xmax, bbox.ymax),
+            (bbox.xmax, bbox.ymin),
+            (bbox.xmin, bbox.ymin)
+            ]), srid=4326)
+
+        mountains_in_bbox = db.execute(select(MountainPeak).where(
+            func.ST_Within(MountainPeak.location, bbox_polygon)
+        )).scalars().all()
+        return mountains_in_bbox
+    except Exception as ex:
+        raise ServiceTechnicalException(
+            msg=f"Can't get mountains peaks in bbox, root cause: {ex}",
             code_status=http_status.HTTP_500_INTERNAL_SERVER_ERROR
         )

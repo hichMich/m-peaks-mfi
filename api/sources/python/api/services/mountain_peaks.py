@@ -1,6 +1,7 @@
 from api.dao.mountain_peaks import (
     create_mountain_peak,
     select_all_mountains_peaks,
+    retrieve_all_m_peaks_in_bbox,
     retrieve_mountain_peak_by_location,
     init_mountains_peaks,
     update_m_peak,
@@ -12,7 +13,7 @@ from api.schemas.mountain_peaks import (
     MountainPeaks,
     MountainPeaksEntire,
     Location,
-    MountainPeakOnCreateResponse,
+    BoundingBox
 )
 from api.services import utils
 from api.schemas.common import MOUNTAINS_PEAKS_SAMPLE
@@ -40,6 +41,11 @@ def get_mountain_peaks_by_all(db: Session) -> List[MountainPeaksEntire]:
     """
     try:
         m_peaks = select_all_mountains_peaks(db)
+        if not m_peaks or len(m_peaks) == 0:
+            raise NoResultFound(
+                f"There is not mountain peak in the bbox !",
+                http_status.HTTP_204_NO_CONTENT
+            )
         mountains_peaks = [ 
                 MountainPeaksEntire(
                     uuid=m_peak.uuid,
@@ -177,4 +183,35 @@ def update_mountain_peak(uuid: UUID, data: MountainPeaks, db: Session):
         update_m_peak(uuid, data_dict, db)
     except ServiceTechnicalException as ex:
         raise ex
-    
+
+
+def retrieve_all_mountains_peaks_in_bbox(bbox: BoundingBox, db: Session) -> List[MountainPeaksEntire]:
+    """
+        Retrive all mountains in the bbox
+
+        #### Parameters:
+        - bbox: BoundingBox
+        - db: Session
+    """
+    try:
+        # build the bbox
+        m_peaks = retrieve_all_m_peaks_in_bbox(bbox, db)
+        if not m_peaks or len(m_peaks) == 0:
+            raise NoResultFound(
+                f"There is not mountain peak in the bbox !",
+                http_status.HTTP_204_NO_CONTENT
+            )
+        mountains_peaks = [ 
+                MountainPeaksEntire(
+                    uuid=m_peak.uuid,
+                    name=m_peak.name,
+                    location=Location(
+                        longitude=m_peak.longitude,
+                        latitude=m_peak.latitude,
+                        altitude=m_peak.altitude
+                    )
+                ) for m_peak in m_peaks
+            ]
+        return mountains_peaks
+    except ServiceTechnicalException as ex:
+        raise ex
