@@ -18,8 +18,12 @@ Navigate to the directory containing the docker-compose.yml file and execute the
 ### How to use it
 ##### Examples of bbox
 You can pass this parameters in the endpoint to test get bbox
-bbox = (27.9, 86.8, 28.1, 87.1)
-
+```
+    xmin = 86.8
+    ymin = 27.9
+    xmax = 87.0
+    ymax = 28.1
+```
 
 ### Improvements
 - Add a BD backup with postgis extension
