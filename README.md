@@ -33,6 +33,14 @@ Replace {xmin}, {ymin}, {xmax}, and {ymax} with this latitude and longitude valu
     ymax = 28.1
 ```
 
+### Troubleshootings
+Launching the entire stack simultaneously may introduce transient connection issues due to PostgreSQL's service startup time. While the API service initiates rapidly, it could attempt to connect to the database before it's available, resulting in a "Connection refused" error.
+```
+    psql: error: connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused
+    Is the server running on that host and accepting TCP/IP connections?
+```
+To mitigate this, our run.sh script incorporates a brief sleep period specifically to facilitate a successful connection attempt after PostgreSQL has fully launched.
+
 ### Improvements
 - Add a specific service to backup the db.
 - Use alembic to manage migrations.
