@@ -45,14 +45,15 @@ Launching the entire stack simultaneously may introduce transient connection iss
 To mitigate this, our run.sh script incorporates a brief sleep period specifically to facilitate a successful connection attempt after PostgreSQL has fully launched.
 
 ### Improvements
-- Setup API authentication using JWT and token management system. 
+- Setup API authentication using JWT and token management system.
+- Use GeoJSON, to expose geo data. 
 - Add a specific service to backup the db.
 - Use alembic to manage migrations.
 - Add unit testing.
 - Setup quality linters to ensure quality of the delivery, for example:
-  - flake8: code linter
-  - black: code formatter
-  - bandit: security problems
-  - coverage: test report
-  - xenon: code complexity linter
+  - flake8: code linter.
+  - black: code formatter.
+  - bandit: security problems.
+  - coverage: test report.
+  - xenon: code complexity linter.
 - Add CI/CD worklow with Github actions or gitlab-ci.
