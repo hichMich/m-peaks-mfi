@@ -3,6 +3,9 @@ This API is for public use, you can simply clone the project without any permiss
 ```
     git clone https://github.com/hichMich/m-peaks-mfi.git
 ```
+This stack leverages:
+- A PostgreSQL database server, coupled with the PostGIS extension for geospatial functionalities.
+- An API service
 
 ### How to launch it
 Navigate to the directory containing the docker-compose.yml file and execute the following commands:
