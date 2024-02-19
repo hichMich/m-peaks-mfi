@@ -87,6 +87,8 @@ async def get_all_mountain_peaks(db=Depends(get_db)) -> List[MountainPeaksEntire
     except ServiceTechnicalException as ex:
         logger.error(ex.msg)
         raise HTTPException(status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(ex.msg))
+    except NoResultFound as ex:
+        raise HTTPException(status_code=http_status.HTTP_204_NO_CONTENT, detail=str(ex.args[0]))
     except Exception as ex:
         logger.error(f"Unknown exception: {ex}")
         raise ex
