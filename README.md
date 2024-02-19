@@ -1,23 +1,31 @@
 # Welcome to Mountain Peaks API
-This is a public repo, to use this API, you must befor of all do:
+This API is for public use, you can simply clone the project without any permission.
 ```
     git clone https://github.com/hichMich/m-peaks-mfi.git
 ```
 
 ### How to launch it
-Navigate to the directory containing the docker-compose.yml file and execute the following commands.
-- to build all images and up the entire stack:
+Navigate to the directory containing the docker-compose.yml file and execute the following commands:
+- Build all images and up the entire stack:
 ```
     docker-compose up --build
 ```
-- to down the entire stack:
+- Down the entire stack:
 ```
     docker-compose down -v --remove-orphans
 ```
 
 ### How to use it
-##### Examples of bbox
-You can pass this parameters in the endpoint to test get bbox
+##### Discover the API
+Open your preferred browser and visit http://localhost:5001/docs to explore all available endpoints in the Swagger page
+##### Initialize data
+In order to initialize some data in the db, you can simply use this endpoint: /mountain_peaks/init
+
+##### Example of bbox
+Test the mountain peak retrieval by bounding box using the following endpoint:
+/mountain_peak/bbox/{xmin}/{ymin}/{xmax}/{ymax}
+Replace {xmin}, {ymin}, {xmax}, and {ymax} with this latitude and longitude values
+
 ```
     xmin = 86.8
     ymin = 27.9
@@ -26,7 +34,13 @@ You can pass this parameters in the endpoint to test get bbox
 ```
 
 ### Improvements
-- Add a BD backup with postgis extension
-- Add unit testing
-- Add migrations
-
+- Add a specific service to backup the db.
+- Use alembic to manage migrations.
+- Add unit testing.
+- Setup quality linters to ensure quality of the delivery for example:
+  - flake8: code linter
+  - black: code formatter
+  - bandit: security problems
+  - coverage: test report
+  - xenon: code complexity linter
+- Add CI/CD process with Github actions or gitlab-ci. 

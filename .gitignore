@@ -1,5 +1,7 @@
 .idea
-tests/reports
 api/sources/python/api/*/__pycache__
 __pycache__
 .vscode
+.env*
+.venv
+/venv

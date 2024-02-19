@@ -230,7 +230,10 @@ def get_all_mountains_peaks_in_bbox(
 
         bbox = bounding box: https://wiki.openstreetmap.org/wiki/Bounding_Box
         #### Parameters: 
-        - location: Location
+        - xmin: latitude minimum
+        - ymin: longitude minimum
+        - xmax: latitude maximum
+        - ymax longitude maximum
         - db: SqlAlchemy session
 
         #### Returns:
